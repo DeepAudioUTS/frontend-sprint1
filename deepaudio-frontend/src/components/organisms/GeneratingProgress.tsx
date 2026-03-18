@@ -1,3 +1,5 @@
+import styled from 'styled-components';
+import { colors, glass, letterSpacing, fontSize, fontWeight, radius } from '../../styles/tokens';
 import { Spinner } from '../atoms/Spinner';
 import { StepItem } from '../molecules/StepItem';
 
@@ -8,32 +10,78 @@ interface GeneratingProgressProps {
   theme?: string;
 }
 
+const ProgressContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1rem;
+`;
+
+const ThemeChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  height: 29px;
+  padding: 0 1rem;
+  border-radius: ${radius.pill};
+  font-size: ${fontSize.sm};
+  font-weight: ${fontWeight.semibold};
+  color: ${colors.textSecondary};
+  margin-bottom: 2.5rem;
+  background: ${glass.bg};
+  border: 1px solid ${glass.borderStrong};
+`;
+
+const SpinnerWrapper = styled.div`
+  margin-bottom: 2rem;
+`;
+
+const TextCenter = styled.div`
+  text-align: center;
+  margin-bottom: 2rem;
+`;
+
+const ProgressTitle = styled.h2`
+  font-size: ${fontSize.xl2};
+  font-weight: ${fontWeight.black};
+  color: ${colors.textPrimary};
+  letter-spacing: ${letterSpacing.tight};
+  line-height: 1.25;
+  margin-bottom: 0.5rem;
+`;
+
+const ProgressSubtitle = styled.p`
+  font-size: ${fontSize.md};
+  color: ${colors.textMuted};
+  line-height: 1.625;
+`;
+
+const StepsContainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const FooterText = styled.p`
+  font-size: ${fontSize.sm};
+  color: ${colors.textSubtle};
+  text-align: center;
+  margin-top: 1.5rem;
+`;
+
 export function GeneratingProgress({ type, theme }: GeneratingProgressProps) {
   const isDraft = type === 'draft';
 
   return (
-    <div className="flex flex-col items-center pt-4">
-      {/* Theme tag */}
-      {theme && (
-        <span
-          className="inline-flex items-center h-[29px] px-4 rounded-full text-[12px] font-semibold text-[#94a3b8] mb-10"
-          style={{
-            background: 'rgba(255,255,255,0.07)',
-            border: '1px solid rgba(255,255,255,0.12)',
-          }}
-        >
-          🔭 {theme}
-        </span>
-      )}
+    <ProgressContainer>
+      {theme && <ThemeChip>🔭 {theme}</ThemeChip>}
 
-      {/* Animated circle */}
-      <div className="mb-8">
+      <SpinnerWrapper>
         <Spinner size={140} emoji={isDraft ? '✍️' : '🌌'} />
-      </div>
+      </SpinnerWrapper>
 
-      {/* Text */}
-      <div className="text-center mb-8">
-        <h2 className="text-[22px] font-black text-[#f1f5ff] tracking-tight leading-tight mb-2">
+      <TextCenter>
+        <ProgressTitle>
           {isDraft ? (
             <>
               Drafting your
@@ -47,8 +95,8 @@ export function GeneratingProgress({ type, theme }: GeneratingProgressProps) {
               bedtime story…
             </>
           )}
-        </h2>
-        <p className="text-[13px] text-[#64748b] leading-relaxed">
+        </ProgressTitle>
+        <ProgressSubtitle>
           {isDraft ? (
             <>
               Hang tight — this only takes
@@ -61,11 +109,10 @@ export function GeneratingProgress({ type, theme }: GeneratingProgressProps) {
               We'll let you know when it's ready.
             </>
           )}
-        </p>
-      </div>
+        </ProgressSubtitle>
+      </TextCenter>
 
-      {/* Progress steps */}
-      <div className="w-full flex flex-col gap-3">
+      <StepsContainer>
         {isDraft ? (
           <>
             <StepItem
@@ -109,13 +156,13 @@ export function GeneratingProgress({ type, theme }: GeneratingProgressProps) {
             />
           </>
         )}
-      </div>
+      </StepsContainer>
 
-      <p className="text-[12px] text-[#374151] text-center mt-6">
+      <FooterText>
         {isDraft
           ? 'Almost there — your draft preview will appear shortly.'
           : "You can close this screen — we'll notify you when the story is ready."}
-      </p>
-    </div>
+      </FooterText>
+    </ProgressContainer>
   );
 }

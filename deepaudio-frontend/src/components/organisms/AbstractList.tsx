@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import styled from 'styled-components';
+import { colors, glass, fontSize, fontWeight, radius } from '../../styles/tokens';
 import { AbstractCard } from '../molecules/AbstractCard';
 import { Button } from '../atoms/Button';
 
@@ -8,6 +10,40 @@ interface AbstractListProps {
   onRegenerate: () => void;
   loading?: boolean;
 }
+
+const CardList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+`;
+
+const ScrollHint = styled.p`
+  font-size: ${fontSize.xxs};
+  color: ${colors.textFaint};
+  text-align: center;
+  margin-bottom: 1rem;
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const RegenerateButton = styled.button`
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: ${radius.md};
+  font-size: ${fontSize.base};
+  font-weight: ${fontWeight.semibold};
+  color: ${colors.textSecondary};
+  cursor: pointer;
+  background: ${glass.bgDim};
+  border: 1px solid ${glass.border};
+`;
 
 export function AbstractList({
   abstracts,
@@ -24,7 +60,7 @@ export function AbstractList({
 
   return (
     <div>
-      <div className="flex flex-col gap-3 mb-4">
+      <CardList>
         {abstracts.map((text, i) => (
           <AbstractCard
             key={i}
@@ -34,13 +70,11 @@ export function AbstractList({
             onSelect={() => setSelectedIndex(i)}
           />
         ))}
-      </div>
+      </CardList>
 
-      <p className="text-[10px] text-[#334155] text-center mb-4">
-        ↕ Scroll to see all versions
-      </p>
+      <ScrollHint>↕ Scroll to see all versions</ScrollHint>
 
-      <div className="flex flex-col gap-3">
+      <ButtonGroup>
         <Button
           onClick={handleDecide}
           loading={loading}
@@ -48,18 +82,10 @@ export function AbstractList({
         >
           ✨ Decide This Story
         </Button>
-        <button
-          type="button"
-          onClick={onRegenerate}
-          className="h-12 flex items-center justify-center rounded-2xl text-[14px] font-semibold text-[#94a3b8] cursor-pointer"
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}
-        >
+        <RegenerateButton type="button" onClick={onRegenerate}>
           ↩ Try Different Stories
-        </button>
-      </div>
+        </RegenerateButton>
+      </ButtonGroup>
     </div>
   );
 }

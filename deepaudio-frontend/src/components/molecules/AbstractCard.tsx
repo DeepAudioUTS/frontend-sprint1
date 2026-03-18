@@ -1,3 +1,6 @@
+import styled, { css } from 'styled-components';
+import { colors, glass, violetA, shadows, fontSize, fontWeight, radius, transition } from '../../styles/tokens';
+
 interface AbstractCardProps {
   version: number;
   text: string;
@@ -5,46 +8,82 @@ interface AbstractCardProps {
   onSelect: () => void;
 }
 
+const CardButton = styled.button<{ $selected: boolean }>`
+  width: 100%;
+  text-align: left;
+  padding: 1rem;
+  border-radius: ${radius.lg};
+  transition: all ${transition.default};
+  cursor: pointer;
+  box-shadow: ${shadows.cardSubtle};
+  ${({ $selected }) =>
+    $selected
+      ? css`
+          background: ${violetA.a12};
+          border: 1px solid ${violetA.a60};
+        `
+      : css`
+          background: ${glass.bg};
+          border: 1px solid ${glass.borderStrong};
+        `}
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+`;
+
+const VersionLabel = styled.span<{ $selected: boolean }>`
+  font-size: ${fontSize.xxs};
+  font-weight: ${fontWeight.bold};
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: ${({ $selected }) => ($selected ? colors.violet400 : colors.textMuted)};
+`;
+
+const RadioCircle = styled.div<{ $selected: boolean }>`
+  width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  ${({ $selected }) =>
+    $selected
+      ? css`
+          background: ${colors.violet500};
+          border: 1px solid ${colors.violet500};
+        `
+      : css`
+          border: 1px solid ${glass.alpha20};
+        `}
+`;
+
+const RadioDot = styled.div`
+  width: 7px;
+  height: 7px;
+  border-radius: 3.5px;
+  background: ${colors.white};
+`;
+
+const CardText = styled.p`
+  font-size: ${fontSize.md};
+  line-height: 22px;
+  color: ${colors.textLight};
+`;
+
 export function AbstractCard({ version, text, selected, onSelect }: AbstractCardProps) {
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className="w-full text-left p-4 rounded-[18px] transition-all cursor-pointer"
-      style={
-        selected
-          ? {
-              background: 'rgba(139,92,246,0.12)',
-              border: '1px solid rgba(139,92,246,0.6)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
-            }
-          : {
-              background: 'rgba(255,255,255,0.07)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
-            }
-      }
-    >
-      <div className="flex items-start justify-between mb-3">
-        <span
-          className={`text-[10px] font-bold tracking-[0.8px] uppercase ${
-            selected ? 'text-[#a78bfa]' : 'text-[#64748b]'
-          }`}
-        >
-          Version {version}
-        </span>
-        <div
-          className="size-[18px] rounded-[9px] flex items-center justify-center"
-          style={
-            selected
-              ? { background: '#8b5cf6', border: '1px solid #8b5cf6' }
-              : { border: '1px solid rgba(255,255,255,0.2)' }
-          }
-        >
-          {selected && <div className="size-[7px] rounded-[3.5px] bg-white" />}
-        </div>
-      </div>
-      <p className="text-[13px] leading-[22px] text-[#cbd5e1]">{text}</p>
-    </button>
+    <CardButton type="button" $selected={selected} onClick={onSelect}>
+      <CardHeader>
+        <VersionLabel $selected={selected}>Version {version}</VersionLabel>
+        <RadioCircle $selected={selected}>
+          {selected && <RadioDot />}
+        </RadioCircle>
+      </CardHeader>
+      <CardText>{text}</CardText>
+    </CardButton>
   );
 }

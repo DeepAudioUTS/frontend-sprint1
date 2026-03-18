@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import styled from 'styled-components';
+import { colors, glass, letterSpacing, fontSize, fontWeight } from '../../styles/tokens';
 import { GlassCard } from '../atoms/GlassCard';
 import { Button } from '../atoms/Button';
 import { ThemeTag } from '../molecules/ThemeTag';
@@ -16,11 +18,90 @@ interface StoryFormProps {
   loading?: boolean;
 }
 
+const SectionLabel = styled.p`
+  font-size: ${fontSize.xxs};
+  font-weight: ${fontWeight.bold};
+  letter-spacing: ${letterSpacing.label};
+  text-transform: uppercase;
+  color: ${colors.violet500};
+  margin-bottom: 0.75rem;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: ${fontSize.xl3};
+  font-weight: ${fontWeight.black};
+  color: ${colors.textPrimary};
+  letter-spacing: ${letterSpacing.tight};
+  line-height: 1.25;
+  margin-bottom: 1.25rem;
+`;
+
+const FormCard = styled(GlassCard)`
+  padding: 18px;
+`;
+
+const ThemeInputWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 65px;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  background: ${glass.darkBg};
+  border: 1px solid ${glass.border};
+`;
+
+const InputIcon = styled.span`
+  font-size: 1.25rem;
+  flex-shrink: 0;
+`;
+
+const ThemeInput = styled.input`
+  flex: 1;
+  background: transparent;
+  outline: none;
+  font-size: ${fontSize.base};
+  font-weight: ${fontWeight.medium};
+  color: ${colors.textPrimary};
+
+  &::placeholder {
+    color: ${colors.textMuted};
+  }
+`;
+
+const ClearButton = styled.button`
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: ${fontSize.xxs};
+  color: ${colors.textMuted};
+  flex-shrink: 0;
+  cursor: pointer;
+  background: ${glass.bgMedium};
+`;
+
+const TagsRow = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  margin-bottom: 1rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
 export function StoryForm({ onGenerate, loading }: StoryFormProps) {
   const [theme, setTheme] = useState('');
 
   const handleTagClick = (tag: string) => {
-    // Extract theme keyword without the emoji prefix
     const keyword = tag.replace(/^[\S]+\s/, '');
     setTheme(keyword);
   };
@@ -31,56 +112,39 @@ export function StoryForm({ onGenerate, loading }: StoryFormProps) {
 
   return (
     <div>
-      <p className="text-[10px] font-bold tracking-[1.2px] uppercase text-[#8b5cf6] mb-3">
-        ✦ Tonight's Story
-      </p>
-      <h2 className="text-[26px] font-black text-[#f1f5ff] tracking-tight leading-tight mb-5">
+      <SectionLabel>✦ Tonight's Story</SectionLabel>
+      <SectionTitle>
         What's the
         <br />
         <span>story about?</span>
-      </h2>
+      </SectionTitle>
 
-      <GlassCard className="p-[18px]">
-        {/* Theme text input */}
-        <div
-          className="flex items-center gap-3 min-h-[65px] px-4 py-3 rounded-2xl mb-4"
-          style={{
-            background: 'rgba(0,0,0,0.25)',
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}
-        >
-          <span className="text-xl shrink-0">🔭</span>
-          <input
-            className="flex-1 bg-transparent outline-none text-[14px] font-medium text-[#f1f5ff] placeholder:text-[#64748b]"
+      <FormCard>
+        <ThemeInputWrapper>
+          <InputIcon>🔭</InputIcon>
+          <ThemeInput
             placeholder="A brave astronaut exploring a hidden planet…"
             value={theme}
             onChange={(e) => setTheme(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
           />
           {theme && (
-            <button
-              type="button"
-              onClick={() => setTheme('')}
-              className="size-5 rounded-[10px] flex items-center justify-center text-[10px] text-[#64748b] shrink-0"
-              style={{ background: 'rgba(255,255,255,0.08)' }}
-            >
+            <ClearButton type="button" onClick={() => setTheme('')}>
               ✕
-            </button>
+            </ClearButton>
           )}
-        </div>
+        </ThemeInputWrapper>
 
-        {/* Theme suggestion tags */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 mb-4">
+        <TagsRow>
           {THEME_SUGGESTIONS.map((tag) => (
             <ThemeTag key={tag} label={tag} onClick={() => handleTagClick(tag)} />
           ))}
-        </div>
+        </TagsRow>
 
-        {/* Generate button */}
         <Button onClick={handleSubmit} loading={loading} disabled={!theme.trim()}>
           ✨ Generate Story
         </Button>
-      </GlassCard>
+      </FormCard>
     </div>
   );
 }

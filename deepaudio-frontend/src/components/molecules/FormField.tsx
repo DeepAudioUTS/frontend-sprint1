@@ -1,3 +1,5 @@
+import styled from 'styled-components';
+import { colors, letterSpacing, fontSize, fontWeight } from '../../styles/tokens';
 import { Input } from '../atoms/Input';
 
 interface FormFieldProps {
@@ -9,6 +11,20 @@ interface FormFieldProps {
   placeholder?: string;
 }
 
+const FormFieldWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const Label = styled.span`
+  font-size: ${fontSize.xs};
+  font-weight: ${fontWeight.bold};
+  letter-spacing: ${letterSpacing.labelSm};
+  text-transform: uppercase;
+  color: ${colors.violet500};
+`;
+
 export function FormField({
   label,
   icon,
@@ -18,10 +34,8 @@ export function FormField({
   placeholder,
 }: FormFieldProps) {
   return (
-    <div className="flex flex-col gap-3">
-      <span className="text-[11px] font-bold tracking-[0.88px] uppercase text-[#8b5cf6]">
-        {label}
-      </span>
+    <FormFieldWrapper>
+      <Label>{label}</Label>
       <Input
         icon={icon}
         type={type}
@@ -29,6 +43,6 @@ export function FormField({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
       />
-    </div>
+    </FormFieldWrapper>
   );
 }

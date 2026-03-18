@@ -1,9 +1,167 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 import { authApi } from '../api/auth';
+import { colors, gradients, amberA, redA, blobColors, shadows, letterSpacing, fontSize, fontWeight, radius } from '../styles/tokens';
 import { Button } from '../components/atoms/Button';
 import { GlassCard } from '../components/atoms/GlassCard';
 import { FormField } from '../components/molecules/FormField';
+
+const PageWrapper = styled.div`
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: ${colors.bgPage};
+`;
+
+const GradientBlob = styled.div`
+  position: absolute;
+  pointer-events: none;
+  filter: blur(70px);
+`;
+
+const TopBlob = styled(GradientBlob)`
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 300px;
+  border-radius: 150px;
+  background: ${blobColors.top};
+`;
+
+const LeftBlob = styled(GradientBlob)`
+  top: 544px;
+  left: 0;
+  width: 220px;
+  height: 220px;
+  border-radius: 110px;
+  background: ${blobColors.left};
+`;
+
+const RightBlob = styled(GradientBlob)`
+  top: 380px;
+  left: 50%;
+  width: 160px;
+  height: 160px;
+  border-radius: 80px;
+  background: ${blobColors.right};
+`;
+
+const Content = styled.div`
+  position: relative;
+  max-width: 390px;
+  margin: 0 auto;
+  padding: 0 1.75rem;
+`;
+
+const LogoRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 118px;
+  margin-bottom: 2.5rem;
+`;
+
+const LogoIcon = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  background: ${gradients.primaryDiag};
+  box-shadow: ${shadows.logoLg};
+`;
+
+const LogoText = styled.span`
+  font-size: ${fontSize.xl2};
+  font-weight: ${fontWeight.extrabold};
+  color: ${colors.textPrimary};
+  letter-spacing: ${letterSpacing.tight};
+`;
+
+const HeadingSection = styled.div`
+  margin-bottom: 2rem;
+`;
+
+const PageTitle = styled.h1`
+  font-size: ${fontSize.xl4};
+  font-weight: ${fontWeight.black};
+  color: ${colors.textPrimary};
+  letter-spacing: ${letterSpacing.tight};
+  line-height: 1.25;
+`;
+
+const PageSubtitle = styled.p`
+  font-size: ${fontSize.base};
+  color: ${colors.textMuted};
+  line-height: 1.625;
+  margin-top: 0.75rem;
+`;
+
+const FormCard = styled(GlassCard)`
+  padding: 1.5rem;
+`;
+
+const FormFields = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+`;
+
+const ForgotRow = styled.div`
+  text-align: right;
+  margin-top: -0.5rem;
+`;
+
+const ForgotLink = styled.span`
+  font-size: ${fontSize.sm};
+  font-weight: ${fontWeight.semibold};
+  color: ${colors.violet500};
+  cursor: pointer;
+`;
+
+const ErrorMessage = styled.p`
+  font-size: ${fontSize.sm};
+  color: ${colors.red};
+  text-align: center;
+  background: ${redA.a10};
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+`;
+
+const Terms = styled.p`
+  text-align: center;
+  font-size: ${fontSize.sm};
+  color: ${colors.textMuted};
+  margin-top: 1.5rem;
+  line-height: 1.625;
+`;
+
+const TermsLink = styled.span`
+  color: ${colors.textPrimary};
+  font-weight: ${fontWeight.semibold};
+`;
+
+const BadgeRow = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 1.25rem;
+  padding-bottom: 2.5rem;
+`;
+
+const BetaBadge = styled.span`
+  padding: 0.25rem 0.75rem;
+  border-radius: ${radius.pill};
+  font-size: ${fontSize.xxs};
+  font-weight: ${fontWeight.bold};
+  letter-spacing: 0.6px;
+  color: ${colors.amber};
+  background: ${amberA.a10};
+  border: 1px solid ${amberA.a20};
+`;
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -28,83 +186,32 @@ export function LoginPage() {
   };
 
   return (
-    <div
-      className="relative min-h-screen overflow-x-hidden"
-      style={{ background: '#06091a' }}
-    >
-      {/* Background gradient blobs */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: -80,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 300,
-          height: 300,
-          borderRadius: 150,
-          background: 'rgba(109,40,217,0.28)',
-          filter: 'blur(70px)',
-        }}
-      />
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: 544,
-          left: 0,
-          width: 220,
-          height: 220,
-          borderRadius: 110,
-          background: 'rgba(14,165,233,0.14)',
-          filter: 'blur(70px)',
-        }}
-      />
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: 380,
-          left: '50%',
-          width: 160,
-          height: 160,
-          borderRadius: 80,
-          background: 'rgba(124,58,237,0.1)',
-          filter: 'blur(70px)',
-        }}
-      />
+    <PageWrapper>
+      <TopBlob />
+      <LeftBlob />
+      <RightBlob />
 
-      <div className="relative max-w-[390px] mx-auto px-7">
-        {/* Logo */}
-        <div className="flex items-center gap-3 pt-[118px] mb-10">
-          <div
-            className="size-10 rounded-[12px] flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
-              boxShadow: '0 0 20px rgba(124,58,237,0.5)',
-            }}
-          >
-            <span className="text-xl">🌙</span>
-          </div>
-          <span className="text-[22px] font-extrabold text-[#f1f5ff] tracking-tight">
-            Yomu
-          </span>
-        </div>
+      <Content>
+        <LogoRow>
+          <LogoIcon>🌙</LogoIcon>
+          <LogoText>Yomu</LogoText>
+        </LogoRow>
 
-        {/* Heading */}
-        <div className="mb-8">
-          <h1 className="text-[28px] font-black text-[#f1f5ff] tracking-tight leading-tight">
+        <HeadingSection>
+          <PageTitle>
             Welcome
             <br />
             back.
-          </h1>
-          <p className="text-[14px] text-[#64748b] leading-relaxed mt-3">
+          </PageTitle>
+          <PageSubtitle>
             Sign in to continue your child's
             <br />
             bedtime story journey.
-          </p>
-        </div>
+          </PageSubtitle>
+        </HeadingSection>
 
-        {/* Form card */}
-        <GlassCard rounded="rounded-[24px]" className="p-6">
-          <div className="flex flex-col gap-5">
+        <FormCard borderRadius={24}>
+          <FormFields>
             <FormField
               label="Email"
               icon="✉️"
@@ -121,16 +228,10 @@ export function LoginPage() {
               type="password"
               placeholder="••••••••••"
             />
-            <div className="text-right -mt-2">
-              <span className="text-[12px] font-semibold text-[#8b5cf6] cursor-pointer">
-                Forgot password?
-              </span>
-            </div>
-            {error && (
-              <p className="text-xs text-red-400 text-center bg-red-500/10 rounded-xl py-2 px-3">
-                {error}
-              </p>
-            )}
+            <ForgotRow>
+              <ForgotLink>Forgot password?</ForgotLink>
+            </ForgotRow>
+            {error && <ErrorMessage>{error}</ErrorMessage>}
             <Button
               onClick={handleLogin}
               loading={loading}
@@ -138,31 +239,21 @@ export function LoginPage() {
             >
               Sign In →
             </Button>
-          </div>
-        </GlassCard>
+          </FormFields>
+        </FormCard>
 
-        {/* Terms */}
-        <p className="text-center text-[12px] text-[#64748b] mt-6 leading-relaxed">
+        <Terms>
           By signing in, you agree to our
           <br />
-          <span className="text-[#f1f5ff] font-semibold">Terms of Service</span>
+          <TermsLink>Terms of Service</TermsLink>
           {' '}and{' '}
-          <span className="text-[#f1f5ff] font-semibold">Privacy Policy</span>
-        </p>
+          <TermsLink>Privacy Policy</TermsLink>
+        </Terms>
 
-        {/* Beta badge */}
-        <div className="flex justify-center mt-5 pb-10">
-          <span
-            className="px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.6px] text-[#fbbf24]"
-            style={{
-              background: 'rgba(251,191,36,0.1)',
-              border: '1px solid rgba(251,191,36,0.2)',
-            }}
-          >
-            ⚡ Beta v0.1
-          </span>
-        </div>
-      </div>
-    </div>
+        <BadgeRow>
+          <BetaBadge>⚡ Beta v0.1</BetaBadge>
+        </BadgeRow>
+      </Content>
+    </PageWrapper>
   );
 }

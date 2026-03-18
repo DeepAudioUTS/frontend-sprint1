@@ -1,24 +1,39 @@
+import styled, { keyframes } from 'styled-components';
+import { gradients, violetGlow, glass } from '../../styles/tokens';
+
 interface SpinnerProps {
   size?: number;
   emoji?: string;
 }
 
+const pulse = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+`;
+
+const SpinnerWrapper = styled.div<{ $size: number }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: ${({ $size }) => $size}px;
+  height: ${({ $size }) => $size}px;
+  border-radius: 50%;
+  background: ${gradients.cardDeep};
+  border: 1px solid ${violetGlow.a30};
+  box-shadow:
+    0 0 60px ${violetGlow.a25},
+    0 20px 50px ${glass.darkHeavy};
+`;
+
+const EmojiSpan = styled.span<{ $fontSize: number }>`
+  font-size: ${({ $fontSize }) => $fontSize}px;
+  animation: ${pulse} 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+`;
+
 export function Spinner({ size = 140, emoji = '✨' }: SpinnerProps) {
   return (
-    <div
-      className="flex items-center justify-center"
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        background: 'linear-gradient(135deg, #1e2d5e, #0d1835)',
-        border: '1px solid rgba(124,58,237,0.3)',
-        boxShadow: '0 0 60px rgba(124,58,237,0.25), 0 20px 50px rgba(0,0,0,0.5)',
-      }}
-    >
-      <span className="animate-pulse" style={{ fontSize: size * 0.41 }}>
-        {emoji}
-      </span>
-    </div>
+    <SpinnerWrapper $size={size}>
+      <EmojiSpan $fontSize={Math.round(size * 0.41)}>{emoji}</EmojiSpan>
+    </SpinnerWrapper>
   );
 }

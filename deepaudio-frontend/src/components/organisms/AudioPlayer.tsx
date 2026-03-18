@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import styled from 'styled-components';
 import type { Story } from '../../api/types';
+import { colors, gradients, glass, shadows, transition, fontSize, fontWeight, radius } from '../../styles/tokens';
 
 interface AudioPlayerProps {
   story: Story;
@@ -11,6 +13,73 @@ function formatTime(seconds: number): string {
   const s = Math.floor(seconds % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
+
+const ProgressSection = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const ProgressTrack = styled.div`
+  height: 4px;
+  border-radius: ${radius.pill};
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  background: ${glass.border};
+`;
+
+const ProgressFill = styled.div<{ $progress: number }>`
+  height: 100%;
+  border-radius: ${radius.pill};
+  transition: width ${transition.fast};
+  width: ${({ $progress }) => $progress}%;
+  background: ${gradients.progressBlue};
+`;
+
+const TimeRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const TimeText = styled.span`
+  font-size: ${fontSize.xs};
+  font-weight: ${fontWeight.semibold};
+  color: ${colors.textMuted};
+`;
+
+const Controls = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+`;
+
+const SkipButton = styled.button`
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: ${radius.xl};
+  font-size: 1.125rem;
+  color: ${colors.textSecondary};
+  cursor: pointer;
+  background: ${glass.bg};
+  border: 1px solid ${glass.border};
+`;
+
+const PlayButton = styled.button`
+  width: 4.5rem;
+  height: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 36px;
+  font-size: 1.5rem;
+  color: ${colors.white};
+  cursor: pointer;
+  background: ${gradients.primaryDiag};
+  box-shadow: ${shadows.playButton};
+`;
 
 export function AudioPlayer({ story }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -71,69 +140,23 @@ export function AudioPlayer({ story }: AudioPlayerProps) {
         <audio ref={audioRef} src={story.audio_url} preload="metadata" />
       )}
 
-      {/* Progress bar */}
-      <div className="mb-6">
-        <div
-          className="h-1 rounded-full overflow-hidden cursor-pointer mb-2"
-          style={{ background: 'rgba(255,255,255,0.1)' }}
-          onClick={handleSeek}
-        >
-          <div
-            className="h-full rounded-full transition-all"
-            style={{
-              width: `${progress}%`,
-              background: 'linear-gradient(90deg, #7c3aed, #60a5fa)',
-            }}
-          />
-        </div>
-        <div className="flex justify-between">
-          <span className="text-[11px] font-semibold text-[#64748b]">
-            {formatTime(currentTime)}
-          </span>
-          <span className="text-[11px] font-semibold text-[#64748b]">
-            {formatTime(duration)}
-          </span>
-        </div>
-      </div>
+      <ProgressSection>
+        <ProgressTrack onClick={handleSeek}>
+          <ProgressFill $progress={progress} />
+        </ProgressTrack>
+        <TimeRow>
+          <TimeText>{formatTime(currentTime)}</TimeText>
+          <TimeText>{formatTime(duration)}</TimeText>
+        </TimeRow>
+      </ProgressSection>
 
-      {/* Controls */}
-      <div className="flex items-center justify-center gap-7">
-        <button
-          type="button"
-          onClick={skipBack}
-          className="size-11 flex items-center justify-center rounded-[22px] text-lg text-[#94a3b8] cursor-pointer"
-          style={{
-            background: 'rgba(255,255,255,0.07)',
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}
-        >
-          ⏮
-        </button>
-
-        <button
-          type="button"
-          onClick={togglePlay}
-          className="size-[72px] flex items-center justify-center rounded-[36px] text-white text-2xl cursor-pointer"
-          style={{
-            background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
-            boxShadow: '0 8px 32px rgba(124,58,237,0.5)',
-          }}
-        >
+      <Controls>
+        <SkipButton type="button" onClick={skipBack}>⏮</SkipButton>
+        <PlayButton type="button" onClick={togglePlay}>
           {playing ? '⏸' : '▶'}
-        </button>
-
-        <button
-          type="button"
-          onClick={skipForward}
-          className="size-11 flex items-center justify-center rounded-[22px] text-lg text-[#94a3b8] cursor-pointer"
-          style={{
-            background: 'rgba(255,255,255,0.07)',
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}
-        >
-          ⏭
-        </button>
-      </div>
+        </PlayButton>
+        <SkipButton type="button" onClick={skipForward}>⏭</SkipButton>
+      </Controls>
     </div>
   );
 }

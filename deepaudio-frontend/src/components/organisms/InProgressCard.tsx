@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
+import styled, { css } from 'styled-components';
 import type { Story, StoryStatus } from '../../api/types';
+import { colors, gradients, glass, violetA, letterSpacing, transition, fontSize, fontWeight, radius } from '../../styles/tokens';
 import { Button } from '../atoms/Button';
 import { Badge } from '../atoms/Badge';
 
@@ -28,104 +30,188 @@ interface InProgressCardProps {
   story: Story;
 }
 
+const CardContainer = styled.div`
+  overflow: hidden;
+  border-radius: ${radius.xl};
+  background: ${glass.bg};
+  border: 1px solid ${violetA.a35};
+  box-shadow:
+    0 0 0 1px ${violetA.a15},
+    0 8px 32px ${glass.darkShadow};
+`;
+
+const CardInner = styled.div`
+  padding: 18px;
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+`;
+
+const StatusIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const StatusDot = styled.div`
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: ${colors.violet400};
+  box-shadow: 0 0 0 5px rgba(167, 139, 250, 0.15);
+`;
+
+const StatusText = styled.span`
+  font-size: ${fontSize.xs};
+  font-weight: ${fontWeight.semibold};
+  color: ${colors.violet400};
+  letter-spacing: 0.2px;
+`;
+
+const CardTitle = styled.h3`
+  font-size: ${fontSize.xl};
+  font-weight: ${fontWeight.black};
+  color: ${colors.textPrimary};
+  letter-spacing: ${letterSpacing.tight};
+  line-height: 1.25;
+  margin-bottom: 0.5rem;
+`;
+
+const ThemeChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  height: 23px;
+  padding: 0 0.75rem;
+  border-radius: ${radius.pill};
+  font-size: ${fontSize.xxs};
+  font-weight: ${fontWeight.semibold};
+  color: ${colors.textMuted};
+  margin-bottom: 1rem;
+  background: ${glass.bgDim};
+  border: 1px solid ${glass.border};
+`;
+
+const ProgressSection = styled.div`
+  margin-bottom: 1rem;
+`;
+
+const ProgressLabelRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+`;
+
+const ProgressLabel = styled.span`
+  font-size: ${fontSize.xxs};
+  font-weight: ${fontWeight.semibold};
+  color: ${colors.textMuted};
+  letter-spacing: 0.3px;
+`;
+
+const ProgressValue = styled.span`
+  font-size: ${fontSize.xxs};
+  font-weight: ${fontWeight.bold};
+  color: ${colors.violet400};
+`;
+
+const ProgressTrack = styled.div`
+  height: 4px;
+  border-radius: ${radius.pill};
+  overflow: hidden;
+  background: ${glass.bgMedium};
+`;
+
+const ProgressFill = styled.div<{ $progress: number }>`
+  height: 100%;
+  border-radius: ${radius.pill};
+  transition: width ${transition.slow};
+  width: ${({ $progress }) => $progress}%;
+  background: ${gradients.progressIndigo};
+`;
+
+const StepChips = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+`;
+
+const StepChip = styled.div<{ $isDone: boolean; $isActive: boolean }>`
+  flex: 1;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  font-size: ${fontSize.xxs};
+  font-weight: ${fontWeight.bold};
+  ${({ $isDone, $isActive }) =>
+    $isDone
+      ? css`
+          background: ${violetA.a20};
+          color: ${colors.violet400};
+        `
+      : $isActive
+        ? css`
+            background: ${violetA.a35};
+            border: 1px solid ${violetA.a50};
+            color: ${colors.violet200};
+          `
+        : css`
+            background: ${glass.bgFaint};
+            color: ${colors.textFaint};
+          `}
+`;
+
 export function InProgressCard({ story }: InProgressCardProps) {
   const navigate = useNavigate();
   const { step, progress, steps, activeStep } = getProgressInfo(story.status);
 
   return (
-    <div
-      className="overflow-hidden rounded-[22px]"
-      style={{
-        background: 'rgba(255,255,255,0.07)',
-        border: '1px solid rgba(139,92,246,0.35)',
-        boxShadow: '0 0 0 1px rgba(139,92,246,0.15), 0 8px 32px rgba(0,0,0,0.3)',
-      }}
-    >
-      <div className="p-[18px]">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div
-              className="size-[10px] rounded-full bg-[#a78bfa]"
-              style={{ boxShadow: '0 0 0 5px rgba(167,139,250,0.15)' }}
-            />
-            <span className="text-[11px] font-semibold text-[#a78bfa] tracking-[0.2px]">
-              Story creation in progress
-            </span>
-          </div>
+    <CardContainer>
+      <CardInner>
+        <CardHeader>
+          <StatusIndicator>
+            <StatusDot />
+            <StatusText>Story creation in progress</StatusText>
+          </StatusIndicator>
           <Badge>Step {step} of 3</Badge>
-        </div>
+        </CardHeader>
 
-        {/* Title */}
-        <h3 className="text-[20px] font-black text-[#f1f5ff] tracking-tight leading-tight mb-2">
-          {story.title ?? story.theme}
-        </h3>
+        <CardTitle>{story.title ?? story.theme}</CardTitle>
 
-        {/* Theme tag */}
-        <span
-          className="inline-flex items-center h-[23px] px-3 rounded-full text-[10px] font-semibold text-[#64748b] mb-4"
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}
-        >
-          🔭 {story.theme}
-        </span>
+        <ThemeChip>🔭 {story.theme}</ThemeChip>
 
-        {/* Progress bar */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-semibold text-[#64748b] tracking-[0.3px]">
-              Progress
-            </span>
-            <span className="text-[10px] font-bold text-[#a78bfa]">{progress}%</span>
-          </div>
-          <div
-            className="h-1 rounded-full overflow-hidden"
-            style={{ background: 'rgba(255,255,255,0.08)' }}
-          >
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${progress}%`,
-                background: 'linear-gradient(90deg, #7c3aed, #818cf8)',
-              }}
-            />
-          </div>
-        </div>
+        <ProgressSection>
+          <ProgressLabelRow>
+            <ProgressLabel>Progress</ProgressLabel>
+            <ProgressValue>{progress}%</ProgressValue>
+          </ProgressLabelRow>
+          <ProgressTrack>
+            <ProgressFill $progress={progress} />
+          </ProgressTrack>
+        </ProgressSection>
 
-        {/* Step chips */}
-        <div className="flex gap-2 mb-4">
+        <StepChips>
           {steps.map((label, i) => {
             const isDone = label.startsWith('✓');
             const isActive = i === activeStep && !isDone;
             return (
-              <div
-                key={i}
-                className="flex-1 h-7 flex items-center justify-center rounded-lg text-[10px] font-bold"
-                style={
-                  isDone
-                    ? { background: 'rgba(139,92,246,0.2)', color: '#a78bfa' }
-                    : isActive
-                    ? {
-                        background: 'rgba(139,92,246,0.35)',
-                        border: '1px solid rgba(139,92,246,0.5)',
-                        color: '#c4b5fd',
-                      }
-                    : { background: 'rgba(255,255,255,0.05)', color: '#334155' }
-                }
-              >
+              <StepChip key={i} $isDone={isDone} $isActive={isActive}>
                 {label}
-              </div>
+              </StepChip>
             );
           })}
-        </div>
+        </StepChips>
 
-        {/* CTA */}
         <Button onClick={() => navigate(`/story/${story.id}`)}>
           ▶ Continue Creating
         </Button>
-      </div>
-    </div>
+      </CardInner>
+    </CardContainer>
   );
 }

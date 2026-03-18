@@ -1,4 +1,6 @@
+import styled from 'styled-components';
 import type { Story } from '../../api/types';
+import { colors, gradients, glass, fontSize, fontWeight, transition } from '../../styles/tokens';
 
 const THEME_EMOJI: Record<string, string> = {
   space: '🚀',
@@ -10,12 +12,12 @@ const THEME_EMOJI: Record<string, string> = {
 };
 
 const THEME_GRADIENT: Record<string, string> = {
-  space: 'linear-gradient(135deg, #1e3a6e, #0f2447)',
-  forest: 'linear-gradient(135deg, #064e3b, #065f46)',
-  ocean: 'linear-gradient(135deg, #0c4a6e, #075985)',
-  castle: 'linear-gradient(135deg, #4c1d95, #3730a3)',
-  dinosaur: 'linear-gradient(135deg, #14532d, #166534)',
-  default: 'linear-gradient(135deg, #1e2d5e, #0d1835)',
+  space: gradients.space,
+  forest: gradients.forest,
+  ocean: gradients.ocean,
+  castle: gradients.castle,
+  dinosaur: gradients.dinosaur,
+  default: gradients.cardDeep,
 };
 
 function getThemeKey(theme: string): string {
@@ -40,35 +42,82 @@ interface StoryCardProps {
   onClick?: () => void;
 }
 
+const CardButton = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 14px 1rem;
+  border-radius: 1rem;
+  text-align: left;
+  transition: opacity ${transition.default};
+  cursor: pointer;
+  background: ${glass.bg};
+  border: 1px solid ${glass.borderStrong};
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const ThemeIcon = styled.div<{ $gradient: string }>`
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: ${({ $gradient }) => $gradient};
+`;
+
+const CardContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const CardTitle = styled.p`
+  font-size: ${fontSize.md};
+  font-weight: ${fontWeight.bold};
+  color: ${colors.textPrimary};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const MetaRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+`;
+
+const MetaText = styled.span`
+  font-size: ${fontSize.xs};
+  color: ${colors.textMuted};
+`;
+
+const Dot = styled.span`
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: ${colors.textMuted};
+`;
+
 export function StoryCard({ story, onClick }: StoryCardProps) {
   const key = getThemeKey(story.theme);
-
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full flex items-center gap-3 px-4 py-[14px] rounded-2xl text-left transition-opacity hover:opacity-80 cursor-pointer"
-      style={{
-        background: 'rgba(255,255,255,0.07)',
-        border: '1px solid rgba(255,255,255,0.12)',
-      }}
-    >
-      <div
-        className="shrink-0 size-11 rounded-[10px] flex items-center justify-center text-2xl"
-        style={{ background: THEME_GRADIENT[key] }}
-      >
-        {THEME_EMOJI[key]}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-bold text-[#f1f5ff] truncate">
-          {story.title ?? story.theme}
-        </p>
-        <div className="flex items-center gap-1 mt-1">
-          <span className="text-[11px] text-[#64748b]">{timeAgo(story.created_at)}</span>
-          <span className="size-[3px] rounded-full bg-[#64748b]" />
-          <span className="text-[11px] text-[#64748b]">Completed</span>
-        </div>
-      </div>
-    </button>
+    <CardButton type="button" onClick={onClick}>
+      <ThemeIcon $gradient={THEME_GRADIENT[key]}>{THEME_EMOJI[key]}</ThemeIcon>
+      <CardContent>
+        <CardTitle>{story.title ?? story.theme}</CardTitle>
+        <MetaRow>
+          <MetaText>{timeAgo(story.created_at)}</MetaText>
+          <Dot />
+          <MetaText>Completed</MetaText>
+        </MetaRow>
+      </CardContent>
+    </CardButton>
   );
 }

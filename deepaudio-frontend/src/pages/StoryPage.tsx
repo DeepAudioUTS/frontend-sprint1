@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import styled, { keyframes } from 'styled-components';
 import { storiesApi } from '../api/stories';
 import type { Story } from '../api/types';
+import { colors, gradients, glass, violetGlow, shadows, letterSpacing, transition, fontSize, fontWeight, radius } from '../styles/tokens';
 import { StoryLayout } from '../components/templates/StoryLayout';
 import { GeneratingProgress } from '../components/organisms/GeneratingProgress';
 import { AbstractList } from '../components/organisms/AbstractList';
@@ -18,6 +20,183 @@ import { AudioPlayer } from '../components/organisms/AudioPlayer';
 // ──────────────────────────────────────────
 
 const POLL_INTERVAL = 3000;
+
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+// ── Loading state ──────────────────────────
+
+const LoadingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 16rem;
+`;
+
+const LoadingSpinner = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 2px solid ${violetGlow.a30};
+  border-top-color: ${colors.violet600};
+  animation: ${spin} ${transition.spinDuration} linear infinite;
+`;
+
+// ── Completed state ────────────────────────
+
+const HeroSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-top: 0.5rem;
+`;
+
+const HeroCircle = styled.div`
+  width: 180px;
+  height: 180px;
+  border-radius: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  font-size: 80px;
+  background: ${gradients.space};
+  border: 1px solid ${glass.border};
+  box-shadow: ${shadows.hero};
+`;
+
+const ThemeChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 0.75rem;
+  border-radius: ${radius.pill};
+  font-size: ${fontSize.xs};
+  font-weight: ${fontWeight.semibold};
+  color: ${colors.textMuted};
+  background: ${glass.bgDim};
+  border: 1px solid ${glass.border};
+`;
+
+const StoryTitle = styled.h1`
+  font-size: ${fontSize.xl4};
+  font-weight: ${fontWeight.black};
+  color: ${colors.textPrimary};
+  letter-spacing: ${letterSpacing.tight};
+  text-align: center;
+  line-height: 1.25;
+  margin-bottom: 1rem;
+`;
+
+const StoryAbstract = styled.p`
+  font-size: ${fontSize.md};
+  text-align: center;
+  color: ${colors.textSecondary};
+  line-height: 22px;
+  margin-bottom: 1rem;
+`;
+
+const MetaRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+`;
+
+const MetaTag = styled.span`
+  height: 1.75rem;
+  padding: 0 0.75rem;
+  display: flex;
+  align-items: center;
+  border-radius: ${radius.pill};
+  font-size: ${fontSize.xs};
+  font-weight: ${fontWeight.semibold};
+  color: ${colors.textPrimary};
+  background: ${glass.bgFaint};
+  border: 1px solid ${glass.bgMedium};
+`;
+
+// ── Abstract ready state ───────────────────
+
+const ReadyIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+`;
+
+const ReadyDot = styled.div`
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: ${colors.green};
+  box-shadow: ${shadows.readyDot};
+`;
+
+const ReadyText = styled.span`
+  font-size: ${fontSize.sm};
+  font-weight: ${fontWeight.semibold};
+  color: ${colors.green};
+  letter-spacing: 0.24px;
+`;
+
+const SectionLabel = styled.p`
+  font-size: ${fontSize.xxs};
+  font-weight: ${fontWeight.bold};
+  letter-spacing: ${letterSpacing.label};
+  text-transform: uppercase;
+  color: ${colors.violet500};
+  margin-bottom: 0.25rem;
+`;
+
+const StoryHeading = styled.h2`
+  font-size: ${fontSize.xl3};
+  font-weight: ${fontWeight.black};
+  color: ${colors.textPrimary};
+  letter-spacing: ${letterSpacing.tight};
+  line-height: 1.25;
+  margin-bottom: 0.5rem;
+`;
+
+const AbstractThemeChip = styled(ThemeChip)`
+  height: 24px;
+  margin-bottom: 1.25rem;
+`;
+
+const ChooseHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+`;
+
+const ChooseLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const ChooseIcon = styled.span`
+  font-size: 1.125rem;
+`;
+
+const ChooseLabel = styled.span`
+  font-size: ${fontSize.xs};
+  font-weight: ${fontWeight.bold};
+  letter-spacing: 0.66px;
+  text-transform: uppercase;
+  color: ${colors.textMuted};
+`;
+
+const VersionCount = styled.span`
+  font-size: ${fontSize.xs};
+  font-weight: ${fontWeight.semibold};
+  color: ${colors.violet400};
+`;
 
 export function StoryPage() {
   const { id } = useParams<{ id: string }>();
@@ -101,12 +280,9 @@ export function StoryPage() {
   if (!story) {
     return (
       <StoryLayout>
-        <div className="flex items-center justify-center h-64">
-          <div
-            className="size-10 rounded-full border-2 animate-spin"
-            style={{ borderColor: 'rgba(124,58,237,0.3)', borderTopColor: '#7c3aed' }}
-          />
-        </div>
+        <LoadingContainer>
+          <LoadingSpinner />
+        </LoadingContainer>
       </StoryLayout>
     );
   }
@@ -115,62 +291,19 @@ export function StoryPage() {
   if (story.status === 'completed') {
     return (
       <StoryLayout showMore>
-        {/* Hero image / emoji */}
-        <div className="flex flex-col items-center mb-6 pt-2">
-          <div
-            className="size-[180px] rounded-[90px] flex items-center justify-center mb-4"
-            style={{
-              background: 'linear-gradient(135deg, #1e3a6e, #0f2447)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-            }}
-          >
-            <span className="text-[80px]">🚀</span>
-          </div>
-          <span
-            className="inline-flex items-center h-[26px] px-3 rounded-full text-[11px] font-semibold text-[#64748b]"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
-            }}
-          >
-            🌌 {story.theme}
-          </span>
-        </div>
+        <HeroSection>
+          <HeroCircle>🚀</HeroCircle>
+          <ThemeChip>🌌 {story.theme}</ThemeChip>
+        </HeroSection>
 
-        {/* Title */}
-        <h1 className="text-[28px] font-black text-[#f1f5ff] tracking-tight text-center leading-tight mb-4">
-          {story.title}
-        </h1>
+        <StoryTitle>{story.title}</StoryTitle>
+        <StoryAbstract>{story.abstract}</StoryAbstract>
 
-        {/* Abstract */}
-        <p className="text-[13px] text-center text-[#94a3b8] leading-[22px] mb-4">
-          {story.abstract}
-        </p>
+        <MetaRow>
+          <MetaTag>⏱ 8 min</MetaTag>
+          <MetaTag>😊 Heartwarming</MetaTag>
+        </MetaRow>
 
-        {/* Meta tags */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <span
-            className="h-7 px-3 flex items-center rounded-full text-[11px] font-semibold text-[#f1f5ff]"
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.08)',
-            }}
-          >
-            ⏱ 8 min
-          </span>
-          <span
-            className="h-7 px-3 flex items-center rounded-full text-[11px] font-semibold text-[#f1f5ff]"
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.08)',
-            }}
-          >
-            😊 Heartwarming
-          </span>
-        </div>
-
-        {/* Audio player */}
         <AudioPlayer story={story} />
       </StoryLayout>
     );
@@ -180,46 +313,22 @@ export function StoryPage() {
   if (story.status === 'abstract_ready' && abstracts.length > 0) {
     return (
       <StoryLayout title="Story Draft" step="Step 2 of 3">
-        {/* Ready indicator */}
-        <div className="flex items-center gap-2 mb-4">
-          <div
-            className="size-2 rounded-full bg-[#34d399]"
-            style={{ boxShadow: '0 0 8px rgba(52,211,153,0.6)' }}
-          />
-          <span className="text-[12px] font-semibold text-[#34d399] tracking-[0.24px]">
-            AI-generated · Ready to read
-          </span>
-        </div>
+        <ReadyIndicator>
+          <ReadyDot />
+          <ReadyText>AI-generated · Ready to read</ReadyText>
+        </ReadyIndicator>
 
-        {/* Header */}
-        <p className="text-[10px] font-bold tracking-[1px] uppercase text-[#8b5cf6] mb-1">
-          ✦ Tonight's Story
-        </p>
-        <h2 className="text-[26px] font-black text-[#f1f5ff] tracking-tight leading-tight mb-2">
-          {story.title ?? story.theme}
-        </h2>
-        <span
-          className="inline-flex items-center h-6 px-3 rounded-full text-[11px] font-semibold text-[#64748b] mb-5"
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}
-        >
-          🔭 {story.theme}
-        </span>
+        <SectionLabel>✦ Tonight's Story</SectionLabel>
+        <StoryHeading>{story.title ?? story.theme}</StoryHeading>
+        <AbstractThemeChip>🔭 {story.theme}</AbstractThemeChip>
 
-        {/* Choose a story header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">📖</span>
-            <span className="text-[11px] font-bold tracking-[0.66px] uppercase text-[#64748b]">
-              Choose a Story
-            </span>
-          </div>
-          <span className="text-[11px] font-semibold text-[#a78bfa]">
-            {abstracts.length} versions
-          </span>
-        </div>
+        <ChooseHeader>
+          <ChooseLeft>
+            <ChooseIcon>📖</ChooseIcon>
+            <ChooseLabel>Choose a Story</ChooseLabel>
+          </ChooseLeft>
+          <VersionCount>{abstracts.length} versions</VersionCount>
+        </ChooseHeader>
 
         <AbstractList
           abstracts={abstracts}

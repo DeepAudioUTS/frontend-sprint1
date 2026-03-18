@@ -1,13 +1,34 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 import { storiesApi } from '../api/stories';
 import { childrenApi } from '../api/children';
 import type { Story, Child } from '../api/types';
+import { colors, glass, letterSpacing, fontSize, fontWeight } from '../styles/tokens';
 import { AppLayout } from '../components/templates/AppLayout';
 import { StoryForm } from '../components/organisms/StoryForm';
 import { StoryList } from '../components/organisms/StoryList';
 import { InProgressCard } from '../components/organisms/InProgressCard';
 import { StreakBanner } from '../components/molecules/StreakBanner';
+
+const SectionLabel = styled.p`
+  font-size: ${fontSize.xxs};
+  font-weight: ${fontWeight.bold};
+  letter-spacing: ${letterSpacing.label};
+  text-transform: uppercase;
+  color: ${colors.violet500};
+  margin-bottom: 0.75rem;
+`;
+
+const Divider = styled.div`
+  margin: 1.25rem 0;
+  height: 1px;
+  background: ${glass.bgDim};
+`;
+
+const StoriesSection = styled.div`
+  margin-top: 1.25rem;
+`;
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -27,13 +48,11 @@ export function HomePage() {
         setCompletedStories(storiesRes.items.filter((s) => s.status === 'completed'));
         setChildren(childrenRes);
 
-        // Check for in-progress story
         try {
           const inProgress = await storiesApi.getInProgress();
           const story = await storiesApi.getById(inProgress.story_id);
           setInProgressStory(story);
         } catch {
-          // No in-progress story (404)
           setInProgressStory(null);
         }
       } catch {
@@ -65,31 +84,22 @@ export function HomePage() {
 
   return (
     <AppLayout>
-      {/* Tonight's story section */}
       {inProgressStory ? (
         <>
-          <p className="text-[10px] font-bold tracking-[1.2px] uppercase text-[#8b5cf6] mb-3">
-            ✦ Tonight's Story
-          </p>
+          <SectionLabel>✦ Tonight's Story</SectionLabel>
           <InProgressCard story={inProgressStory} />
         </>
       ) : (
         <StoryForm onGenerate={handleGenerate} loading={generating} />
       )}
 
-      {/* Divider */}
-      <div
-        className="my-5 h-px"
-        style={{ background: 'rgba(255,255,255,0.06)' }}
-      />
+      <Divider />
 
-      {/* Streak banner */}
       <StreakBanner count={13} subtitle="7 more nights to unlock a reward!" />
 
-      {/* Past stories */}
-      <div className="mt-5">
+      <StoriesSection>
         <StoryList stories={completedStories} />
-      </div>
+      </StoriesSection>
     </AppLayout>
   );
 }

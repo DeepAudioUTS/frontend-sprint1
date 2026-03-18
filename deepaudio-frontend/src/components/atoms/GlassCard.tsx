@@ -1,29 +1,32 @@
 import React from 'react';
+import styled from 'styled-components';
+import { glass, shadows } from '../../styles/tokens';
 
 interface GlassCardProps {
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
-  rounded?: string;
+  borderRadius?: number | string;
 }
+
+const StyledCard = styled.div<{ $borderRadius: string }>`
+  position: relative;
+  border-radius: ${({ $borderRadius }) => $borderRadius};
+  background: ${glass.bg};
+  border: 1px solid ${glass.borderStrong};
+  box-shadow: ${shadows.card};
+`;
 
 export function GlassCard({
   children,
-  className = '',
+  className,
   style,
-  rounded = 'rounded-[22px]',
+  borderRadius = 22,
 }: GlassCardProps) {
+  const radius = typeof borderRadius === 'number' ? `${borderRadius}px` : borderRadius;
   return (
-    <div
-      className={`relative ${rounded} ${className}`}
-      style={{
-        background: 'rgba(255,255,255,0.07)',
-        border: '1px solid rgba(255,255,255,0.12)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-        ...style,
-      }}
-    >
+    <StyledCard $borderRadius={radius} className={className} style={style}>
       {children}
-    </div>
+    </StyledCard>
   );
 }
