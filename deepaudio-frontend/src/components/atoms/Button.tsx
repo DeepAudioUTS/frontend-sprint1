@@ -41,7 +41,7 @@ const sizeStyles: Record<Size, ReturnType<typeof css>> = {
 const variantStyles: Record<Variant, ReturnType<typeof css>> = {
   primary: css`
     background: ${gradients.primary};
-    box-shadow: ${shadows.primaryButton};
+    box-shadow: ${shadows.primaryButton}, inset 0 1px 0 rgba(255, 255, 255, 0.15);
     color: ${colors.white};
     border: none;
   `,

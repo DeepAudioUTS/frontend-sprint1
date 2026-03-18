@@ -48,4 +48,7 @@ export const storiesApi = {
 
   generateStory: (id: string) =>
     request<Story>(`/api/v1/stories/${id}/generate_story`, { method: 'POST' }),
+
+  delete: (id: string) =>
+    apiClient.delete<null>(`/api/v1/stories/${id}`),
 };

@@ -38,15 +38,16 @@ const SectionTitle = styled.h2`
 
 const FormCard = styled(GlassCard)`
   padding: 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 `;
 
 const ThemeInputWrapper = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 10px;
   min-height: 65px;
   padding: 0.75rem 1rem;
-  border-radius: 1rem;
+  border-radius: 14px;
   margin-bottom: 1rem;
   background: ${glass.darkBg};
   border: 1px solid ${glass.border};
@@ -64,13 +65,14 @@ const ThemeInput = styled.input`
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.medium};
   color: ${colors.textPrimary};
+  border: none;
 
   &::placeholder {
     color: ${colors.textMuted};
   }
 `;
 
-const ClearButton = styled.button`
+const ClearButton = styled.div`
   width: 1.25rem;
   height: 1.25rem;
   border-radius: 10px;
@@ -129,7 +131,7 @@ export function StoryForm({ onGenerate, loading }: StoryFormProps) {
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
           />
           {theme && (
-            <ClearButton type="button" onClick={() => setTheme('')}>
+            <ClearButton onClick={() => setTheme('')}>
               ✕
             </ClearButton>
           )}

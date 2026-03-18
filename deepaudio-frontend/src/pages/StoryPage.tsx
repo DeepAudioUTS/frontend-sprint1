@@ -20,6 +20,7 @@ import { AudioPlayer } from '../components/organisms/AudioPlayer';
 // ──────────────────────────────────────────
 
 const POLL_INTERVAL = 3000;
+const POLL_INTERVAL_FAST = 1000;
 
 const spin = keyframes`
   from { transform: rotate(0deg); }
@@ -226,7 +227,12 @@ export function StoryPage() {
 
     const poll = async () => {
       const s = await fetchStory();
-      if (cancelled || !s) return;
+      if (cancelled) return;
+      if (!s) {
+        // Retry on transient error rather than stopping permanently
+        if (!cancelled) timer = setTimeout(poll, POLL_INTERVAL);
+        return;
+      }
 
       if (s.status === 'completed') return;
 
@@ -242,8 +248,9 @@ export function StoryPage() {
         }
       }
 
-      // Keep polling for all other states and abstract_ready with no abstracts yet
-      if (!cancelled) timer = setTimeout(poll, POLL_INTERVAL);
+      // generating_text: poll fast (1s) to detect voice generation start quickly
+      const interval = s.status === 'generating_text' ? POLL_INTERVAL_FAST : POLL_INTERVAL;
+      if (!cancelled) timer = setTimeout(poll, interval);
     };
 
     poll();
@@ -261,20 +268,42 @@ export function StoryPage() {
     try {
       // 1. Store selected abstract → status: generating_text
       await storiesApi.selectAbstract(id, { abstract });
-      // 2. Trigger story + audio generation
-      await storiesApi.generateStory(id);
-      // 3. Refresh story state
-      await fetchStory();
-      // 4. Restart polling loop for generating_text → generating_audio → completed
-      setPollTrigger((k) => k + 1);
     } catch (e) {
       console.error(e);
-    } finally {
       setSelecting(false);
+      return;
     }
+    try {
+      // 2. Trigger story + audio generation (best-effort — backend may auto-start)
+      await storiesApi.generateStory(id);
+    } catch (e) {
+      console.error('generateStory failed, continuing anyway:', e);
+    }
+    // 3. Refresh story state and restart polling regardless of generateStory result
+    await fetchStory();
+    setPollTrigger((k) => k + 1);
+    setSelecting(false);
   };
 
-  const handleRegenerate = () => navigate('/');
+  const handleRegenerate = async () => {
+    if (!id) return;
+    try {
+      await storiesApi.delete(id);
+    } catch (e) {
+      console.error(e);
+    }
+    navigate('/');
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    try {
+      await storiesApi.delete(id);
+    } catch (e) {
+      console.error(e);
+    }
+    navigate('/');
+  };
 
   // ── Loading state ────────────────────────────
   if (!story) {
@@ -290,7 +319,7 @@ export function StoryPage() {
   // ── State 4: completed → Story Player ────────
   if (story.status === 'completed') {
     return (
-      <StoryLayout showMore>
+      <StoryLayout showMore onDelete={handleDelete}>
         <HeroSection>
           <HeroCircle>🚀</HeroCircle>
           <ThemeChip>🌌 {story.theme}</ThemeChip>
@@ -352,7 +381,11 @@ export function StoryPage() {
   // ── State 3: generating_text | generating_audio → Creating Story ──
   return (
     <StoryLayout title="Creating Story" step="Step 3 of 3">
-      <GeneratingProgress type="story" theme={story.theme} />
+      <GeneratingProgress
+        type="story"
+        theme={story.theme}
+        status={story.status as 'generating_text' | 'generating_audio'}
+      />
     </StoryLayout>
   );
 }

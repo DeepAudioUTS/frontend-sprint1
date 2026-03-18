@@ -67,7 +67,6 @@ export function StreakBanner({ count, subtitle }: StreakBannerProps) {
       </BannerContent>
       <CountArea>
         <CountText>{count}</CountText>
-        <DaysLabel>days</DaysLabel>
       </CountArea>
     </BannerWrapper>
   );

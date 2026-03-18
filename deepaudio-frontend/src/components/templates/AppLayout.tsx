@@ -64,11 +64,12 @@ const Header = styled.header`
   height: 110px;
 `;
 
-const LogoButton = styled.button`
+const LogoButton = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
+  background-color: rgba(0, 0, 0, 0);
 `;
 
 const LogoIcon = styled.div`
@@ -78,7 +79,6 @@ const LogoIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
   background: ${gradients.primaryDiag};
   box-shadow: ${shadows.logo};
 `;
@@ -119,8 +119,12 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       <ContentWrapper>
         <Header>
-          <LogoButton type="button" onClick={() => navigate('/')}>
-            <LogoIcon>🌙</LogoIcon>
+          <LogoButton onClick={() => navigate('/')}>
+            <LogoIcon>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#f1f5ff" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            </LogoIcon>
             <LogoText>Yomu</LogoText>
           </LogoButton>
 

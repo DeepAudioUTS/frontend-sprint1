@@ -8,6 +8,7 @@ type GenType = 'draft' | 'story';
 interface GeneratingProgressProps {
   type: GenType;
   theme?: string;
+  status?: 'generating_text' | 'generating_audio';
 }
 
 const ProgressContainer = styled.div`
@@ -69,8 +70,9 @@ const FooterText = styled.p`
   margin-top: 1.5rem;
 `;
 
-export function GeneratingProgress({ type, theme }: GeneratingProgressProps) {
+export function GeneratingProgress({ type, theme, status }: GeneratingProgressProps) {
   const isDraft = type === 'draft';
+  const isVoice = status === 'generating_audio';
 
   return (
     <ProgressContainer>
@@ -87,6 +89,12 @@ export function GeneratingProgress({ type, theme }: GeneratingProgressProps) {
               Drafting your
               <br />
               story outline…
+            </>
+          ) : isVoice ? (
+            <>
+              Generating
+              <br />
+              voice narration…
             </>
           ) : (
             <>
@@ -146,13 +154,13 @@ export function GeneratingProgress({ type, theme }: GeneratingProgressProps) {
               icon="✍️"
               title="Writing the story"
               subtitle="Crafting scenes and dialogue…"
-              state="active"
+              state={isVoice ? 'done' : 'active'}
             />
             <StepItem
               icon="🎙️"
               title="Generating voice"
-              subtitle="AI narration · waiting"
-              state="waiting"
+              subtitle={isVoice ? 'Creating AI narration…' : 'AI narration · waiting'}
+              state={isVoice ? 'active' : 'waiting'}
             />
           </>
         )}

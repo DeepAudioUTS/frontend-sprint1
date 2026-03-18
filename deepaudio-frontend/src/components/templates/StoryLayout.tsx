@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { colors, glass, blobColors, fontSize, fontWeight } from '../../styles/tokens';
@@ -9,6 +9,7 @@ interface StoryLayoutProps {
   title?: string;
   step?: string;
   showMore?: boolean;
+  onDelete?: () => void;
 }
 
 const PageWrapper = styled.div`
@@ -90,6 +91,10 @@ const HeaderTitle = styled.span`
   color: ${colors.textMuted};
 `;
 
+const MoreContainer = styled.div`
+  position: relative;
+`;
+
 const MoreButton = styled.button`
   width: 36px;
   height: 36px;
@@ -108,6 +113,36 @@ const MoreIcon = styled.span`
   letter-spacing: 0.15em;
 `;
 
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 160px;
+  background: rgba(10, 14, 35, 0.97);
+  border: 1px solid ${glass.border};
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 100;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+`;
+
+const DropdownItem = styled.div`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: ${fontSize.base};
+  font-weight: ${fontWeight.semibold};
+  color: ${colors.red};
+  cursor: pointer;
+  background: transparent;
+
+  &:hover {
+    background: rgba(248, 113, 113, 0.08);
+  }
+`;
+
 const HeaderSpacer = styled.div`
   width: 36px;
   height: 36px;
@@ -117,8 +152,21 @@ const Main = styled.main`
   padding: 0 1.75rem 2.5rem;
 `;
 
-export function StoryLayout({ children, title, step, showMore }: StoryLayoutProps) {
+export function StoryLayout({ children, title, step, showMore, onDelete }: StoryLayoutProps) {
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   return (
     <PageWrapper>
@@ -136,9 +184,24 @@ export function StoryLayout({ children, title, step, showMore }: StoryLayoutProp
 
           {step && <Badge>{step}</Badge>}
           {showMore && (
-            <MoreButton type="button">
-              <MoreIcon>···</MoreIcon>
-            </MoreButton>
+            <MoreContainer ref={menuRef}>
+              <MoreButton type="button" onClick={() => setMenuOpen((o) => !o)}>
+                <MoreIcon>···</MoreIcon>
+              </MoreButton>
+              {menuOpen && (
+                <DropdownMenu>
+                  <DropdownItem
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onDelete?.();
+                    }}
+                  >
+                    🗑 Delete Story
+                  </DropdownItem>
+                </DropdownMenu>
+              )}
+            </MoreContainer>
           )}
           {!step && !showMore && <HeaderSpacer />}
         </Header>

@@ -95,7 +95,7 @@ export function HomePage() {
 
       <Divider />
 
-      <StreakBanner count={13} subtitle="7 more nights to unlock a reward!" />
+      <StreakBanner count={13}/>
 
       <StoriesSection>
         <StoryList stories={completedStories} />
