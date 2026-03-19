@@ -1,12 +1,15 @@
 services:
   frontend:
-    build: ./deepaudio-frontend
+    build: .
     container_name: frontend
     ports:
       - "5173:5173"
     volumes:
       - ./deepaudio-frontend:/app
-      - /app/node_modules
+      - node_modules:/app/node_modules
+
+volumes:
+  node_modules:
 
 networks:
   shared-net:

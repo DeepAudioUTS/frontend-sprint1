@@ -4,6 +4,10 @@ import { colors, glass, fontSize, fontWeight } from '../../styles/tokens';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   icon?: string;
+  type?: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
 }
 
 const InputWrapper = styled.div`
@@ -29,17 +33,24 @@ const StyledInput = styled.input`
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.medium};
   color: ${colors.textPrimary};
+  border: none;
 
   &::placeholder {
     color: ${colors.textMuted};
   }
 `;
 
-export function Input({ icon, ...props }: InputProps) {
+export function Input({
+  icon,
+  type,
+  value,
+  onChange,
+  placeholder,
+}: InputProps) {
   return (
     <InputWrapper>
       {icon && <IconSpan>{icon}</IconSpan>}
-      <StyledInput {...props} />
+      <StyledInput type={type} value={value} onChange={onChange} placeholder={placeholder} />
     </InputWrapper>
   );
 }

@@ -59,7 +59,7 @@ const LogoRow = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding-top: 118px;
+  padding-top: 50px;
   margin-bottom: 2.5rem;
 `;
 
