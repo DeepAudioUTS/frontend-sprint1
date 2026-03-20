@@ -321,7 +321,7 @@ export function StoryPage() {
     return (
       <StoryLayout showMore onDelete={handleDelete}>
         <HeroSection>
-          <HeroCircle>🚀</HeroCircle>
+          <HeroCircle>📖</HeroCircle>
           <ThemeChip>🌌 {story.theme}</ThemeChip>
         </HeroSection>
 
