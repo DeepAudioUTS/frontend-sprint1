@@ -7,7 +7,7 @@ import type {
   Story,
 } from './types';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://lemongrass:8000';
 
 export const storiesApi = {
   list: (limit = 20, offset = 0) =>
