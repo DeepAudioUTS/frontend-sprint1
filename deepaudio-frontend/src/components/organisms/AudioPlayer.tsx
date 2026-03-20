@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import type { Story } from '../../api/types';
+import { storiesApi } from '../../api/stories';
 import { colors, gradients, glass, shadows, transition, fontSize, fontWeight, radius } from '../../styles/tokens';
 
 interface AudioPlayerProps {
@@ -86,6 +87,18 @@ export function AudioPlayer({ story }: AudioPlayerProps) {
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    storiesApi.getAudioBlobUrl(story.id).then((url) => {
+      objectUrl = url;
+      setBlobUrl(url);
+    }).catch(() => {});
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [story.id]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -136,8 +149,8 @@ export function AudioPlayer({ story }: AudioPlayerProps) {
 
   return (
     <div>
-      {story.audio_url && (
-        <audio ref={audioRef} src={story.audio_url} preload="metadata" />
+      {blobUrl && (
+        <audio ref={audioRef} src={blobUrl} preload="metadata" />
       )}
 
       <ProgressSection>

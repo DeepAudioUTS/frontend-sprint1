@@ -51,4 +51,19 @@ export const storiesApi = {
 
   delete: (id: string) =>
     apiClient.delete<null>(`/api/v1/stories/${id}`),
+
+  getAudioBlobUrl: async (id: string): Promise<string> => {
+    const token = getToken();
+    const res = await fetch(`${BASE_URL}/api/v1/stories/${id}/audio`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.status === 401) {
+      localStorage.removeItem('access_token');
+      window.location.href = '/login';
+      throw new Error('Unauthorized');
+    }
+    if (!res.ok) throw new Error('Failed to fetch audio');
+    const blob = await res.blob();
+    return URL.createObjectURL(blob);
+  },
 };
