@@ -51,21 +51,6 @@ const Controls = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.75rem;
-`;
-
-const SkipButton = styled.button`
-  width: 2.75rem;
-  height: 2.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: ${radius.xl};
-  font-size: 1.125rem;
-  color: ${colors.textSecondary};
-  cursor: pointer;
-  background: ${glass.bg};
-  border: 1px solid ${glass.border};
 `;
 
 const PlayButton = styled.button`
@@ -116,7 +101,7 @@ export function AudioPlayer({ story }: AudioPlayerProps) {
       audio.removeEventListener('durationchange', onDurationChange);
       audio.removeEventListener('ended', onEnded);
     };
-  }, []);
+  }, [blobUrl]);
 
   const togglePlay = async () => {
     const audio = audioRef.current;
@@ -128,14 +113,6 @@ export function AudioPlayer({ story }: AudioPlayerProps) {
       await audio.play();
       setPlaying(true);
     }
-  };
-
-  const skipBack = () => {
-    if (audioRef.current) audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 15);
-  };
-
-  const skipForward = () => {
-    if (audioRef.current) audioRef.current.currentTime = Math.min(duration, audioRef.current.currentTime + 15);
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -164,11 +141,9 @@ export function AudioPlayer({ story }: AudioPlayerProps) {
       </ProgressSection>
 
       <Controls>
-        <SkipButton type="button" onClick={skipBack}>⏮</SkipButton>
         <PlayButton type="button" onClick={togglePlay}>
           {playing ? '⏸' : '▶'}
         </PlayButton>
-        <SkipButton type="button" onClick={skipForward}>⏭</SkipButton>
       </Controls>
     </div>
   );
