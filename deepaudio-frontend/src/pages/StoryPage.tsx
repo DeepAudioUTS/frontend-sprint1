@@ -64,6 +64,7 @@ const HeroCircle = styled.div`
   justify-content: center;
   margin-bottom: 1rem;
   font-size: 80px;
+  line-height: 1;
   background: ${gradients.space};
   border: 1px solid ${glass.border};
   box-shadow: ${shadows.hero};

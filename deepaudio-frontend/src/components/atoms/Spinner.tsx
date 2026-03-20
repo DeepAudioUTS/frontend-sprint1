@@ -27,6 +27,7 @@ const SpinnerWrapper = styled.div<{ $size: number }>`
 
 const EmojiSpan = styled.span<{ $fontSize: number }>`
   font-size: ${({ $fontSize }) => $fontSize}px;
+  line-height: 1;
   animation: ${pulse} 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 `;
 

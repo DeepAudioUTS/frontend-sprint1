@@ -50,6 +50,7 @@ const StepIcon = styled.div<{ $state: StepState }>`
   align-items: center;
   justify-content: center;
   font-size: 1rem;
+  line-height: 1;
   ${({ $state }) => iconStateStyles[$state]}
 `;
 
