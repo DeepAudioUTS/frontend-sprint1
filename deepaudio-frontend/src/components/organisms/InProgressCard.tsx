@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import styled, { css } from 'styled-components';
-import type { Story, StoryStatus } from '../../api/types';
+import type { InProgressStory, StoryStatus } from '../../api/types';
 import { colors, gradients, glass, violetA, letterSpacing, transition, fontSize, fontWeight, radius } from '../../styles/tokens';
 import { Button } from '../atoms/Button';
 import { Badge } from '../atoms/Badge';
@@ -27,7 +27,7 @@ function getProgressInfo(status: StoryStatus): ProgressInfo {
 }
 
 interface InProgressCardProps {
-  story: Story;
+  draft: InProgressStory;
 }
 
 const CardContainer = styled.div`
@@ -81,19 +81,6 @@ const CardTitle = styled.h3`
   margin-bottom: 0.5rem;
 `;
 
-const ThemeChip = styled.span`
-  display: inline-flex;
-  align-items: center;
-  height: 23px;
-  padding: 0 0.75rem;
-  border-radius: ${radius.pill};
-  font-size: ${fontSize.xxs};
-  font-weight: ${fontWeight.semibold};
-  color: ${colors.textMuted};
-  margin-bottom: 1rem;
-  background: ${glass.bgDim};
-  border: 1px solid ${glass.border};
-`;
 
 const ProgressSection = styled.div`
   margin-bottom: 1rem;
@@ -167,9 +154,9 @@ const StepChip = styled.div<{ $isDone: boolean; $isActive: boolean }>`
           `}
 `;
 
-export function InProgressCard({ story }: InProgressCardProps) {
+export function InProgressCard({ draft }: InProgressCardProps) {
   const navigate = useNavigate();
-  const { step, progress, steps, activeStep } = getProgressInfo(story.status);
+  const { step, progress, steps, activeStep } = getProgressInfo(draft.status);
 
   return (
     <CardContainer>
@@ -182,9 +169,7 @@ export function InProgressCard({ story }: InProgressCardProps) {
           <Badge>Step {step} of 3</Badge>
         </CardHeader>
 
-        <CardTitle>{story.title ?? story.theme}</CardTitle>
-
-        <ThemeChip>🔭 {story.theme}</ThemeChip>
+        <CardTitle>Story in progress</CardTitle>
 
         <ProgressSection>
           <ProgressLabelRow>
@@ -208,7 +193,7 @@ export function InProgressCard({ story }: InProgressCardProps) {
           })}
         </StepChips>
 
-        <Button onClick={() => navigate(`/story/${story.id}`)}>
+        <Button onClick={() => navigate(`/story/${draft.draft_id}`)}>
           ▶ Continue Creating
         </Button>
       </CardInner>

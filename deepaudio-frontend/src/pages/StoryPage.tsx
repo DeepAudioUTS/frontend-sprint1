@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { storiesApi } from '../api/stories';
-import type { Story } from '../api/types';
+import type { Story, StoryStatus } from '../api/types';
 import { colors, gradients, glass, violetGlow, shadows, letterSpacing, transition, fontSize, fontWeight, radius } from '../styles/tokens';
 import { StoryLayout } from '../components/templates/StoryLayout';
 import { GeneratingProgress } from '../components/organisms/GeneratingProgress';
@@ -203,55 +203,74 @@ const VersionCount = styled.span`
 export function StoryPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationTheme = (location.state as { theme?: string } | null)?.theme;
 
+  // draftStatus: set while story is in-progress (null = either loading or completed)
+  const [draftStatus, setDraftStatus] = useState<StoryStatus | null>(null);
   const [story, setStory] = useState<Story | null>(null);
   const [abstracts, setAbstracts] = useState<string[]>([]);
   const [selecting, setSelecting] = useState(false);
   const [pollTrigger, setPollTrigger] = useState(0);
 
-  const fetchStory = useCallback(async (): Promise<Story | null> => {
-    if (!id) return null;
-    try {
-      const s = await storiesApi.getById(id);
-      setStory(s);
-      return s;
-    } catch {
-      return null;
-    }
-  }, [id]);
-
-  // Unified polling effect — restarts when pollTrigger increments (after abstract selection)
+  // Unified polling effect — polls getInProgress() for draft status,
+  // falls back to getById / list when generation is complete.
+  // Restarts when pollTrigger increments (after abstract selection).
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
 
     const poll = async () => {
-      const s = await fetchStory();
-      if (cancelled) return;
-      if (!s) {
-        // Retry on transient error rather than stopping permanently
-        if (!cancelled) timer = setTimeout(poll, POLL_INTERVAL);
-        return;
-      }
+      try {
+        const inProgress = await storiesApi.getInProgress();
+        if (cancelled) return;
 
-      if (s.status === 'completed') return;
+        if (inProgress.draft_id !== id) {
+          // A different draft is in progress — this URL must be a completed story
+          const s = await storiesApi.getById(id);
+          if (!cancelled) { setStory(s); setDraftStatus(null); }
+          return;
+        }
 
-      if (s.status === 'abstract_ready') {
-        try {
-          const abs = await storiesApi.getAbstracts(id);
-          if (abs && !cancelled) {
-            setAbstracts(abs);
-            return; // Stop polling — wait for user selection
+        setDraftStatus(inProgress.status);
+
+        if (inProgress.status === 'abstract_ready') {
+          try {
+            const abs = await storiesApi.getAbstracts(id);
+            if (abs && !cancelled) {
+              setAbstracts(abs);
+              return; // Stop polling — wait for user selection
+            }
+          } catch {
+            // fall through to retry
           }
+        }
+
+        // generating_text: poll fast (1s) to detect voice generation start quickly
+        const interval = inProgress.status === 'generating_text' ? POLL_INTERVAL_FAST : POLL_INTERVAL;
+        if (!cancelled) timer = setTimeout(poll, interval);
+      } catch {
+        // getInProgress returned 404 — no draft in progress
+        if (cancelled) return;
+        try {
+          // Try to load as a completed story (id = story_id)
+          const s = await storiesApi.getById(id);
+          if (!cancelled) { setStory(s); setDraftStatus(null); }
         } catch {
-          // fall through to retry
+          // id was a draft_id; fetch the most recently completed story
+          try {
+            const res = await storiesApi.list(1, 0);
+            if (!cancelled && res.items.length > 0) {
+              setStory(res.items[0]);
+              setDraftStatus(null);
+            }
+          } catch {
+            // keep loading state; retry
+            if (!cancelled) timer = setTimeout(poll, POLL_INTERVAL);
+          }
         }
       }
-
-      // generating_text: poll fast (1s) to detect voice generation start quickly
-      const interval = s.status === 'generating_text' ? POLL_INTERVAL_FAST : POLL_INTERVAL;
-      if (!cancelled) timer = setTimeout(poll, interval);
     };
 
     poll();
@@ -260,7 +279,7 @@ export function StoryPage() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [id, fetchStory, pollTrigger]);
+  }, [id, pollTrigger]);
 
   // ── Abstract selection handler ──────────────
   const handleSelectAbstract = async (abstract: string) => {
@@ -280,8 +299,9 @@ export function StoryPage() {
     } catch (e) {
       console.error('generateStory failed, continuing anyway:', e);
     }
-    // 3. Refresh story state and restart polling regardless of generateStory result
-    await fetchStory();
+    // 3. Clear abstracts, optimistically set status, and restart polling
+    setAbstracts([]);
+    setDraftStatus('generating_text');
     setPollTrigger((k) => k + 1);
     setSelecting(false);
   };
@@ -307,7 +327,7 @@ export function StoryPage() {
   };
 
   // ── Loading state ────────────────────────────
-  if (!story) {
+  if (!story && draftStatus === null) {
     return (
       <StoryLayout>
         <LoadingContainer>
@@ -318,7 +338,7 @@ export function StoryPage() {
   }
 
   // ── State 4: completed → Story Player ────────
-  if (story.status === 'completed') {
+  if (story) {
     return (
       <StoryLayout showMore onDelete={handleDelete}>
         <HeroSection>
@@ -340,7 +360,7 @@ export function StoryPage() {
   }
 
   // ── State 2: abstract_ready → Story Draft ────
-  if (story.status === 'abstract_ready' && abstracts.length > 0) {
+  if (draftStatus === 'abstract_ready' && abstracts.length > 0) {
     return (
       <StoryLayout title="Story Draft" step="Step 2 of 3">
         <ReadyIndicator>
@@ -349,8 +369,8 @@ export function StoryPage() {
         </ReadyIndicator>
 
         <SectionLabel>✦ Tonight's Story</SectionLabel>
-        <StoryHeading>{story.title ?? story.theme}</StoryHeading>
-        <AbstractThemeChip>🔭 {story.theme}</AbstractThemeChip>
+        <StoryHeading>{locationTheme ?? 'Your Story'}</StoryHeading>
+        {locationTheme && <AbstractThemeChip>🔭 {locationTheme}</AbstractThemeChip>}
 
         <ChooseHeader>
           <ChooseLeft>
@@ -371,10 +391,10 @@ export function StoryPage() {
   }
 
   // ── State 1: generating_abstract → Creating Draft ──
-  if (story.status === 'generating_abstract') {
+  if (draftStatus === 'generating_abstract') {
     return (
       <StoryLayout title="Creating Draft" step="Step 1 of 3">
-        <GeneratingProgress type="draft" theme={story.theme} />
+        <GeneratingProgress type="draft" theme={locationTheme} />
       </StoryLayout>
     );
   }
@@ -384,8 +404,8 @@ export function StoryPage() {
     <StoryLayout title="Creating Story" step="Step 3 of 3">
       <GeneratingProgress
         type="story"
-        theme={story.theme}
-        status={story.status as 'generating_text' | 'generating_audio'}
+        theme={locationTheme}
+        status={draftStatus as 'generating_text' | 'generating_audio'}
       />
     </StoryLayout>
   );

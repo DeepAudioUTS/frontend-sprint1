@@ -1,6 +1,7 @@
 import { apiClient, getToken, request } from './client';
 import type {
   CreateStoryRequest,
+  DraftResponse,
   InProgressStory,
   PaginatedStories,
   SelectAbstractRequest,
@@ -14,7 +15,7 @@ export const storiesApi = {
     apiClient.get<PaginatedStories>(`/api/v1/stories?limit=${limit}&offset=${offset}`),
 
   create: (data: CreateStoryRequest) =>
-    apiClient.post<Story>('/api/v1/stories', data),
+    apiClient.post<DraftResponse>('/api/v1/stories/', data),
 
   getById: (id: string) =>
     apiClient.get<Story>(`/api/v1/stories/${id}`),
@@ -44,10 +45,10 @@ export const storiesApi = {
   },
 
   selectAbstract: (id: string, data: SelectAbstractRequest) =>
-    apiClient.post<Story>(`/api/v1/stories/${id}/select_abstract`, data),
+    apiClient.post<DraftResponse>(`/api/v1/stories/${id}/select_abstract`, data),
 
   generateStory: (id: string) =>
-    request<Story>(`/api/v1/stories/${id}/generate_story`, { method: 'POST' }),
+    request<DraftResponse>(`/api/v1/stories/${id}/generate_story`, { method: 'POST' }),
 
   delete: (id: string) =>
     apiClient.delete<null>(`/api/v1/stories/${id}`),

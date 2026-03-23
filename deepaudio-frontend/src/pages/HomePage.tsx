@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { storiesApi } from '../api/stories';
 import { childrenApi } from '../api/children';
-import type { Story, Child } from '../api/types';
+import type { Story, InProgressStory, Child } from '../api/types';
 import { colors, glass, letterSpacing, fontSize, fontWeight } from '../styles/tokens';
 import { AppLayout } from '../components/templates/AppLayout';
 import { StoryForm } from '../components/organisms/StoryForm';
@@ -33,7 +33,7 @@ const StoriesSection = styled.div`
 export function HomePage() {
   const navigate = useNavigate();
   const [completedStories, setCompletedStories] = useState<Story[]>([]);
-  const [inProgressStory, setInProgressStory] = useState<Story | null>(null);
+  const [inProgressStory, setInProgressStory] = useState<InProgressStory | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [generating, setGenerating] = useState(false);
 
@@ -45,13 +45,12 @@ export function HomePage() {
           childrenApi.list(),
         ]);
 
-        setCompletedStories(storiesRes.items.filter((s) => s.status === 'completed'));
+        setCompletedStories(storiesRes.items);
         setChildren(childrenRes);
 
         try {
           const inProgress = await storiesApi.getInProgress();
-          const story = await storiesApi.getById(inProgress.story_id);
-          setInProgressStory(story);
+          setInProgressStory(inProgress);
         } catch {
           setInProgressStory(null);
         }
@@ -70,11 +69,11 @@ export function HomePage() {
     }
     setGenerating(true);
     try {
-      const story = await storiesApi.create({
+      const draft = await storiesApi.create({
         child_id: children[0].id,
         theme,
       });
-      navigate(`/story/${story.id}`);
+      navigate(`/story/${draft.draft_id}`, { state: { theme } });
     } catch (e) {
       console.error(e);
     } finally {
@@ -87,7 +86,7 @@ export function HomePage() {
       {inProgressStory ? (
         <>
           <SectionLabel>✦ Tonight's Story</SectionLabel>
-          <InProgressCard story={inProgressStory} />
+          <InProgressCard draft={inProgressStory} />
         </>
       ) : (
         <StoryForm onGenerate={handleGenerate} loading={generating} />
