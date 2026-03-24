@@ -1,5 +1,6 @@
 import { apiClient, getToken, request } from './client';
 import type {
+  AbstractCandidate,
   CreateStoryRequest,
   DraftResponse,
   InProgressStory,
@@ -24,9 +25,10 @@ export const storiesApi = {
     apiClient.get<InProgressStory>('/api/v1/stories/in_progress'),
 
   /**
-   * Returns abstracts array if ready (200), or null if still generating (202).
+   * Returns abstract candidates if ready (200), or null if still generating (202).
+   * Calling this while status is failed_generating_abstract auto-resumes generation.
    */
-  getAbstracts: async (id: string): Promise<string[] | null> => {
+  getAbstracts: async (id: string): Promise<AbstractCandidate[] | null> => {
     const token = getToken();
     const res = await fetch(`${BASE_URL}/api/v1/stories/${id}/abstracts`, {
       headers: {

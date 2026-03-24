@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import type { AbstractCandidate } from '../../api/types';
 import { colors, glass, fontSize, fontWeight, radius } from '../../styles/tokens';
 import { AbstractCard } from '../molecules/AbstractCard';
 import { Button } from '../atoms/Button';
 
 interface AbstractListProps {
-  abstracts: string[];
-  onSelect: (abstract: string) => Promise<void>;
+  abstracts: AbstractCandidate[];
+  onSelect: (candidate: AbstractCandidate) => Promise<void>;
   onRegenerate: () => void;
   loading?: boolean;
 }
@@ -61,11 +62,11 @@ export function AbstractList({
   return (
     <div>
       <CardList>
-        {abstracts.map((text, i) => (
+        {abstracts.map((candidate, i) => (
           <AbstractCard
             key={i}
             version={i + 1}
-            text={text}
+            text={candidate.abstract}
             selected={selectedIndex === i}
             onSelect={() => setSelectedIndex(i)}
           />

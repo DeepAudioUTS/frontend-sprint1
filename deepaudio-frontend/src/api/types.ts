@@ -2,7 +2,15 @@ export type StoryStatus =
   | 'generating_abstract'
   | 'abstract_ready'
   | 'generating_text'
-  | 'generating_audio';
+  | 'generating_audio'
+  | 'failed_generating_abstract'
+  | 'failed_generating_text'
+  | 'failed_generating_audio';
+
+export interface AbstractCandidate {
+  abstract: string;
+  story_prompt: string;
+}
 
 export interface Story {
   id: string;
@@ -10,7 +18,9 @@ export interface Story {
   theme: string;
   title: string | null;
   abstracts: string[] | null;
+  story_prompts: string[] | null;
   abstract: string | null;
+  story_prompt: string | null;
   content: string | null;
   audio_url: string | null;
   created_at: string;
@@ -50,14 +60,17 @@ export interface CreateStoryRequest {
 
 export interface SelectAbstractRequest {
   abstract: string;
+  story_prompt: string;
 }
 
 export interface InProgressStory {
   draft_id: string;
   status: StoryStatus;
+  error: string | null;
 }
 
 export interface DraftResponse {
   draft_id: string;
   status: StoryStatus;
+  error: string | null;
 }

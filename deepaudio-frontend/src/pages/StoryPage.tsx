@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { storiesApi } from '../api/stories';
-import type { Story, StoryStatus } from '../api/types';
+import type { AbstractCandidate, Story, StoryStatus } from '../api/types';
 import { colors, gradients, glass, violetGlow, shadows, letterSpacing, transition, fontSize, fontWeight, radius } from '../styles/tokens';
 import { StoryLayout } from '../components/templates/StoryLayout';
 import { GeneratingProgress } from '../components/organisms/GeneratingProgress';
@@ -209,7 +209,7 @@ export function StoryPage() {
   // draftStatus: set while story is in-progress (null = either loading or completed)
   const [draftStatus, setDraftStatus] = useState<StoryStatus | null>(null);
   const [story, setStory] = useState<Story | null>(null);
-  const [abstracts, setAbstracts] = useState<string[]>([]);
+  const [abstracts, setAbstracts] = useState<AbstractCandidate[]>([]);
   const [selecting, setSelecting] = useState(false);
   const [pollTrigger, setPollTrigger] = useState(0);
 
@@ -235,13 +235,25 @@ export function StoryPage() {
 
         setDraftStatus(inProgress.status);
 
-        if (inProgress.status === 'abstract_ready') {
+        if (inProgress.status === 'abstract_ready' || inProgress.status === 'failed_generating_abstract') {
+          // For failed_generating_abstract, calling getAbstracts auto-resumes generation
           try {
             const abs = await storiesApi.getAbstracts(id);
             if (abs && !cancelled) {
               setAbstracts(abs);
+              setDraftStatus('abstract_ready');
               return; // Stop polling — wait for user selection
             }
+          } catch {
+            // fall through to retry
+          }
+        }
+
+        if (inProgress.status === 'failed_generating_text' || inProgress.status === 'failed_generating_audio') {
+          // Auto-resume by calling generateStory
+          try {
+            await storiesApi.generateStory(id);
+            if (!cancelled) setDraftStatus('generating_text');
           } catch {
             // fall through to retry
           }
@@ -282,12 +294,12 @@ export function StoryPage() {
   }, [id, pollTrigger]);
 
   // ── Abstract selection handler ──────────────
-  const handleSelectAbstract = async (abstract: string) => {
+  const handleSelectAbstract = async (candidate: AbstractCandidate) => {
     if (!id) return;
     setSelecting(true);
     try {
       // 1. Store selected abstract → status: generating_text
-      await storiesApi.selectAbstract(id, { abstract });
+      await storiesApi.selectAbstract(id, candidate);
     } catch (e) {
       console.error(e);
       setSelecting(false);
@@ -390,8 +402,8 @@ export function StoryPage() {
     );
   }
 
-  // ── State 1: generating_abstract → Creating Draft ──
-  if (draftStatus === 'generating_abstract') {
+  // ── State 1: generating_abstract (+ failed recovery) → Creating Draft ──
+  if (draftStatus === 'generating_abstract' || draftStatus === 'failed_generating_abstract') {
     return (
       <StoryLayout title="Creating Draft" step="Step 1 of 3">
         <GeneratingProgress type="draft" theme={locationTheme} />
@@ -399,13 +411,17 @@ export function StoryPage() {
     );
   }
 
-  // ── State 3: generating_text | generating_audio → Creating Story ──
+  // ── State 3: generating_text | generating_audio (+ failed recovery) → Creating Story ──
+  const audioStatus =
+    draftStatus === 'generating_audio' || draftStatus === 'failed_generating_audio'
+      ? 'generating_audio'
+      : 'generating_text';
   return (
     <StoryLayout title="Creating Story" step="Step 3 of 3">
       <GeneratingProgress
         type="story"
         theme={locationTheme}
-        status={draftStatus as 'generating_text' | 'generating_audio'}
+        status={audioStatus}
       />
     </StoryLayout>
   );
