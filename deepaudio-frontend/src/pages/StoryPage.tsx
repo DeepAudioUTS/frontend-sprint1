@@ -19,8 +19,8 @@ import { AudioPlayer } from '../components/organisms/AudioPlayer';
 //  completed            → StoryPlayer
 // ──────────────────────────────────────────
 
-const POLL_INTERVAL = 3000;
-const POLL_INTERVAL_FAST = 1000;
+const POLL_INTERVAL = 6000;
+const POLL_INTERVAL_FAST = 6000;
 
 const spin = keyframes`
   from { transform: rotate(0deg); }
