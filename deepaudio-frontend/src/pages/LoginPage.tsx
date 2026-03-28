@@ -177,6 +177,7 @@ export function LoginPage() {
     try {
       const res = await authApi.login({ email, password });
       localStorage.setItem('access_token', res.access_token);
+      localStorage.setItem('refresh_token', res.refresh_token);
       navigate('/');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login failed');

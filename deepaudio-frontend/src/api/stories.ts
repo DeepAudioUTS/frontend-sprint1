@@ -1,4 +1,4 @@
-import { apiClient, getToken, request } from './client';
+import { apiClient, clearTokens, getToken, request } from './client';
 import type {
   AbstractCandidate,
   CreateStoryRequest,
@@ -38,7 +38,7 @@ export const storiesApi = {
     });
     if (res.status === 202) return null;
     if (res.status === 401) {
-      localStorage.removeItem('access_token');
+      clearTokens();
       window.location.href = '/login';
       throw new Error('Unauthorized');
     }
@@ -61,7 +61,7 @@ export const storiesApi = {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     if (res.status === 401) {
-      localStorage.removeItem('access_token');
+      clearTokens();
       window.location.href = '/login';
       throw new Error('Unauthorized');
     }
