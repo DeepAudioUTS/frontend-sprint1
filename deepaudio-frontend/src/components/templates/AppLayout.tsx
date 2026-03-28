@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { colors, gradients, violetA, blobColors, shadows, letterSpacing, fontSize, fontWeight } from '../../styles/tokens';
+import { colors, gradients, violetA, blobColors, shadows, letterSpacing, fontSize, fontWeight, glass } from '../../styles/tokens';
+import { clearTokens } from '../../api/client';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -108,8 +109,61 @@ const Main = styled.main`
   padding: 0 1.25rem 2.5rem;
 `;
 
+const AvatarWrapper = styled.div`
+  position: relative;
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: ${glass.bg};
+  backdrop-filter: blur(16px);
+  border: 1px solid ${violetA.a20};
+  border-radius: 12px;
+  box-shadow: ${shadows.card};
+  overflow: hidden;
+  z-index: 100;
+`;
+
+const DropdownItem = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  background: none;
+  border: none;
+  color: ${colors.textPrimary};
+  font-size: ${fontSize.sm};
+  font-weight: ${fontWeight.medium};
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: ${glass.bgDim};
+  }
+`;
+
 export function AppLayout({ children }: AppLayoutProps) {
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    clearTokens();
+    navigate('/login');
+  };
 
   return (
     <PageWrapper>
@@ -128,7 +182,16 @@ export function AppLayout({ children }: AppLayoutProps) {
             <LogoText>Yomu</LogoText>
           </LogoButton>
 
-          <AvatarButton type="button">🧒</AvatarButton>
+          <AvatarWrapper ref={wrapperRef}>
+            <AvatarButton type="button" onClick={() => setMenuOpen(v => !v)}>🧒</AvatarButton>
+            {menuOpen && (
+              <DropdownMenu>
+                <DropdownItem onClick={handleLogout}>
+                  <span>🚪</span> Log out
+                </DropdownItem>
+              </DropdownMenu>
+            )}
+          </AvatarWrapper>
         </Header>
 
         <Main>{children}</Main>
