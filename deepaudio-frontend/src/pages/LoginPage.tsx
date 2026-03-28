@@ -165,17 +165,17 @@ const BetaBadge = styled.span`
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleLogin = async () => {
-    if (!email || !password) return;
+    if (!username || !password) return;
     setLoading(true);
     setError('');
     try {
-      const res = await authApi.login({ email, password });
+      const res = await authApi.login({ username, password });
       localStorage.setItem('access_token', res.access_token);
       localStorage.setItem('refresh_token', res.refresh_token);
       navigate('/');
@@ -216,8 +216,8 @@ export function LoginPage() {
             <FormField
               label="Email"
               icon="✉️"
-              value={email}
-              onChange={setEmail}
+              value={username}
+              onChange={setUsername}
               type="email"
               placeholder="parent@example.com"
             />
@@ -236,7 +236,7 @@ export function LoginPage() {
             <Button
               onClick={handleLogin}
               loading={loading}
-              disabled={!email || !password}
+              disabled={!username || !password}
             >
               Sign In →
             </Button>
